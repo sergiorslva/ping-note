@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bola animada com intervalo de tempo</title>
+    <style>
+        canvas {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+
+<div>
+    <canvas id="myCanvas" width="600" height="300"></canvas>
+    <audio id="bounceSound" src="c1.wav"></audio>
+</div>
+<div>
+    <button id="btnstart">Iniciar</button>
+    <button id="btnstop" style="display:none;">Parar</button>
+</div>
+
+<script>
+    const canvas = document.getElementById('myCanvas');
+    const ctx = canvas.getContext('2d');
+    const sound = document.getElementById('bounceSound');
+    const btnStart = document.getElementById('btnstart');
+    const btnStop = document.getElementById('btnstop');
+
+    let ball = {
+        x: 50,
+        y: 250, // altura inicial, mesma da linha
+        radius: 15,
+        dy: -3, // velocidade de movimento (subida ou descida)
+        isGoingUp: true // controla se a bola está subindo ou descendo
+    };
+
+    let animationInterval = null; // variável para guardar o intervalo de animação
+    const lineY = 250; // Posição da linha
+    const maxHeight = 100; // Altura máxima que a bola vai subir
+
+    function drawLine() {
+        ctx.beginPath();
+        ctx.moveTo(0, lineY);
+        ctx.lineTo(canvas.width, lineY);
+        ctx.strokeStyle = 'black';
+        ctx.stroke();
+        ctx.closePath();
+    }
+
+    function drawBall() {
+        ctx.beginPath();
+        ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+        ctx.fillStyle = 'blue';
+        ctx.fill();
+        ctx.closePath();
+    }
+
+    function updateBall() {
+        // Verificar se a bola está subindo ou descendo
+        if (ball.isGoingUp) {
+            ball.y -= Math.abs(ball.dy); // Subindo
+            if (ball.y <= maxHeight) {
+                ball.isGoingUp = false; // Quando atinge a altura máxima, começa a descer
+            }
+        } else {            
+            ball.y += Math.abs(ball.dy); // Descendo
+            if (ball.y + ball.radius >= lineY) {                
+                ball.isGoingUp = true; // Quando atinge a linha, começa a subir de novo
+                sound.play(); // Toca o som ao bater na linha
+            }
+        }
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height); // Limpa o canvas
+        drawLine();
+        drawBall();
+        updateBall();
+    }
+
+    // Controla o intervalo de tempo fixo para subir e descer a bola
+    const intervalTime = 1000 / 60; // 60 FPS (frames por segundo)
+
+    // Função para iniciar a animação
+    btnStart.addEventListener('click', function() {
+        if (!animationInterval) {
+            animationInterval = setInterval(draw, intervalTime); // Executa a função draw a cada intervalo
+            btnStart.style.display = 'none'; // Esconde o botão "Iniciar"
+            btnStop.style.display = 'block'; // Mostra o botão "Parar"
+        }
+    });
+
+    // Função para parar a animação
+    btnStop.addEventListener('click', function() {
+        clearInterval(animationInterval); // Para a animação
+        animationInterval = null; // Reseta o intervalo
+        btnStart.style.display = 'block'; // Mostra o botão "Iniciar"
+        btnStop.style.display = 'none'; // Esconde o botão "Parar"
+    });
+</script>
+
+</body>
+</html>
